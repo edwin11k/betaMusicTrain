@@ -22,58 +22,57 @@ def UI():
     ## User Choices ! If None is assigned, default value will be used
     ## window=0.05, step=0.02, directory=defaultDir (in musicHandler.py)
     ## Must check parameters carefully
+    ## Model Choice : 'SVM' , 'SVM_RBF', 'GradientBoosting','RandomForest','ExtraTrees'
     ###############################################################################################
     listOfMusic=['Classical','Rock'];
     trainDir=[defaultDir+listOfMusic[0],defaultDir+listOfMusic[1]];
     window=[0.2,0.2];windowStep=[0.05,0.05];
-    MIAlgorithm='KNN';testDir=defaultDir+'Test'
+    MIAlgorithm='ExtraTrees';testDir=defaultDir+'Test'
     ###############################################################################################
     
 
-    """ Binary Linear SVM Classifier"""
+    ### Binary Linear SVM Classifier ###
     if MIAlgorithm=='SVM':
         print('Binary Linear SVM Classifier')
         model=binaryMusicSVM(listOfMusic,trainDir,window,windowStep,RBF=False)
-    
-        
-    """ Binary RBF SVM Classifier"""
+        R=testMusicSampleSVM(model,testDir,listOfMusic)
+           
+    ### Binary RBF SVM Classifier ###
     if MIAlgorithm=='SVM_RBF':
         print('Binary RBF SVM Classifier')
         model=binaryMusicSVM(listOfMusic,trainDir,window,windowStep,RBF=True)
+        R=testMusicSampleSVM(model,testDir,listOfMusic)
         
-    """ KNN Model Classifier """
+    ### Binary Gradient Boosting ### 
+    if MIAlgorithm=='GradientBoosting':
+        print ('Binary Gradient Boosting Classifier')
+        model=binaryGradientBoosting(listOfMusic,trainDir,window,windowStep)
+        R=testMusicSampleSVM(model,testDir,listOfMusic)
     
-    if MIAlgorithm=='KNN':
-        print ('K- Nearest Neighbor Classifier(currently only for binary purpose)')
-        model=binaryMusicKNN(listOfMusic,trainDir,window,windowStep,5)
-    
-    
- 
+    ### Random Forest Training ###
+    if MIAlgorithm=='RandomForest':
+        print('Random Forest Classifier')
+        model=binaryRandomForest(listOfMusic,trainDir,window,windowStep)
+        R=testMusicSampleSVM(model,testDir,listOfMusic)
+        
+
+    if MIAlgorithm=='ExtraTrees':
+        print('Extra Trees Classifier')
+        model=binaryExtraTrees(listOfMusic,trainDir,window,windowStep)
+        R=testMusicSampleSVM(model,testDir,listOfMusic)        
+        
     ### All files in test directory will be tested for classification#################
-    """ Testing files for classification########################################################"""        
-    R=testMusicSampleSVM(model,testDir,listOfMusic)
-    for mem in R:
-        print (mem)
+    """ View The results"""        
+    
+    viewResults(R)
  
 
-    
+
     
 
-        
-def testFile():
-    ###########################################################################################################
-    listOfMusic=['Classical','Rock'];
-    trainDir=[defaultDir+listOfMusic[0],defaultDir+listOfMusic[1]];
-    window=[1,1];windowStep=[0.04,0.02];
-    MIAlgorithm='SVM';testDir=defaultDir+'Test'
-    ###########################################################################################################
-    
-    newFactory=musicFactory();testMusic=newFactory.loadMusic('test',testDir)
-    for i,fileName in enumerate(testMusic.fileName):
-        print(testMusic.fileName[i])
-    
-    
-    
+def viewResults(results):
+    for mem in results:
+        print (mem)
 
 
 
@@ -94,20 +93,38 @@ def testMusicSampleSVM(model,testDir,trainTypes):
             resultStr.append((testMusic.fileName[i],pos,neg,pos/total,trainTypes[1]))
 
     return resultStr
-    
 
 
-def binaryMusicKNN(listMusic,listDir,window,step,K):
-    print('KNN Model Training Initiated! This may take a while~')
+
+def binaryRandomForest(listMusic,listDir,window,step):  
     features=featureStack(loadMusicFeatures(listMusic,listDir,window,step))
-    knn=trainKNN(features,K)
-    print('KNN Training Completed!')
-    return knn
+    print('Random Forest Model Fitting Initiated! This may take a while~')
+    # number of estimator set as 100 as default
+    rf=trainRandomForest(features, 100)
+    print('Gradient Boosting Training Completed!')
+    return rf
+
+
+def binaryExtraTrees(listMusic,listDir,window,step):  
+    features=featureStack(loadMusicFeatures(listMusic,listDir,window,step))
+    print('Extra Trees Model Fitting Initiated! This may take a while~')
+    # number of estimator set as 100 as default
+    et=trainRandomForest(features, 100)
+    print('Extra Trees Training Completed!')
+    return et
+
+def binaryGradientBoosting(listMusic,listDir,window,step):  
+    features=featureStack(loadMusicFeatures(listMusic,listDir,window,step))
+    print('Gradient Boosting Model Fitting Initiated! This may take a while~')
+    # number of estimator set as 100 as default
+    gb=trainGradientBoosting(features, 100)
+    print('Gradient Boosting Training Completed!')
+    return gb
 
 
 def binaryMusicSVM(listMusic,listDir,window,step,RBF):
-    print('SVM Model Training Initiated! This may take a while~')
     features=featureStack(loadMusicFeatures(listMusic,listDir,window,step))
+    print('SVM Model Fitting Initiated! This may take a while~')
     if RBF:
         svm=trainSVM_RBF(features,0.1)
     else:
@@ -124,7 +141,7 @@ def loadMusicFeatures(listMusic,listDir,window,windowStep):
         if window[i]==None and windowStep[i]==None:
             Music=newFactory.loadMusic(mem,listDir[i])
         else:
-            print('Warning : New Step and/or Window size assigned!')
+            print('Warning : New Step and Window size assigned!')
             Music=newFactory.loadMusic(mem,listDir[i],window[i],windowStep[i])
         musicFeatures.append(Music.stFeatures)   
     print('Music Features are loaded')
@@ -144,4 +161,3 @@ def featureStack(features):
         
     
 UI()
-#testFile()
