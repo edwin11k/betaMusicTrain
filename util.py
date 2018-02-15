@@ -21,12 +21,16 @@ def loadMusicFeatures(listMusic,listDir,window,windowStep):
             Music=newFactory.loadMusic(mem,listDir[i],window[i],windowStep[i])
         musicFeatures.append(Music.stFeatures)   
     print('Music Features are loaded')
-    
-
     return musicFeatures
 
 
 
+def displayMusicInfo(musicType,listDir,window,windowStep):
+    for i,dir1 in enumerate(listDir):
+        newFactory=musicFactory();newFactory.loadMusic(music_genre=musicType[i],directory=dir1,window1=window[i],step1=windowStep[i])
+        #newFactory.printMusicFileInfo()
+    
+    
 
 
 # Stack the features from various sources in the genre, & Transpose is needed to use list of features
