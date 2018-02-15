@@ -11,6 +11,10 @@ import os
 
 class musicFactory(object):
      
-       
+    
     def loadMusic(self,music_genre=None,directory=os.curdir,window1=0.05,step1=0.02):
-        return Music(dirPath=directory,music_genre=music_genre,window=window1,step=step1)
+        self.musicFiles=Music(dirPath=directory,music_genre=music_genre,window=window1,step=step1)
+        return self.musicFiles
+    
+    def printMusicFileInfo(self):
+        print(self.musicFiles)
